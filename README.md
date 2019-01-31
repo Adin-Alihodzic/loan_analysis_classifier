@@ -30,24 +30,38 @@ Therefore, these columns are removed by the code as a preprocessing step:
 * purpose
 
 ## Categorical & Textual Data
-The next step was preprocessing categorical and textual columns. All text was converted to lower case and punctuation was removed. Words like ‘company’, ‘corporation’ were removed from the emp_title value as they correspond to different ways of saying the same thing. In emp_title column variations of same employer were grouped together to form more representative categories for instance (‘us army’ and ‘us military’). Only categories with enough representation (more than 40 items per group) were kept for emp_title. For each record in Notes punctuation were removed and text was into words. Stop word list was generated to remove irrelevant wods. Words indicating various client parameters were left (stability of the job, education, missing payments) were kept as the reason for the loan is sometimes reflected in those words. Words with frequency higher than 400 were kept, each representing a separate feature. The feature is encoded by 1 if word is present and by 0 if word is not available. Column earliest_cr_line which is encoded as data were converted to numeric feature - number of days passed since that data.
-For all the features on the training and prediction stage the following transformations were done:
-Numeric features were normalized by subtracting mean and dividing by standard deviation. In the encoded state missing values were replaced with 0 which represents mean value after encoding.
-Binary features (target column is_bad and all the columns representing words were kept as is.
-Categorical features were encoded with oneHot encoding (each category has its own column assigned to 1 for this category). Missing values has all 0s in those columns.
-Cross Validation
-Two types of cross-validation were implemented: k-fold validation (value of folds can be selected in the config.py) and hold-out (percentage of the file used for training can be also set up in the config.py)
-Algorithm first generates files which store corresponding training and prediction files. Next each fold algorithm is trained. Generated models are applied to remaining data for prediction. Results produced by each prediction step are combined together to form overall metrics for algorithm with this kind of parameters: accuracy, precision, recall, F1-score, logLoss. For accuracy, precision, recall and F1-score values are also generated for different thresholds of probability to see how these will affect prediction results.
-Importance Estimation
+
+The next step was preprocessing categorical and textual columns. All text was converted to lower case and punctuation was removed. Words like ‘company’, ‘corporation’ were removed from the emp_title value as they correspond to different ways of saying the same thing. In *emp_title* column variations of same employer were grouped together to form more representative categories for instance (‘us army’ and ‘us military’). Only categories with enough representation (more than 40 items per group) were kept for *emp_title*. For each record in *Notes* punctuation were removed and text was into words. Stop word list was generated to remove irrelevant wods. Words indicating various client parameters were left (stability of the job, education, missing payments) were kept as the reason for the loan is sometimes reflected in those words. Words with frequency higher than 400 were kept, each representing a separate feature. The feature is encoded by 1 if word is present and by 0 if word is not available. Column *earliest_cr_line* which is encoded as data were converted to numeric feature - number of days passed since that data. For all the features on the training and prediction stage the following transformations were done:
+
+* Numeric features were normalized by subtracting mean and dividing by standard deviation. In the encoded state missing values were replaced with 0 which represents mean value after encoding.
+* Binary features (target column is_bad and all the columns representing words were kept as is.
+* Categorical features were encoded with oneHot encoding (each category has its own column assigned to 1 for this category). Missing values has all 0s in those columns.
+
+## Cross Validation
+
+Two types of cross-validation were implemented: 
+
+* k-fold validation (value of folds can be selected in the config.py) and 
+* hold-out (percentage of the file used for training can be also set up in the config.py)
+
+The algorithm first generates files which store corresponding training and prediction files. Next each fold algorithm is trained. Generated models are applied to remaining data for prediction. Results produced by each prediction step are combined together to form overall metrics for algorithm with this kind of parameters: accuracy, precision, recall, F1-score, logLoss. For accuracy, precision, recall and F1-score values are also generated for different thresholds of probability to see how these will affect prediction results.
+
+## Importance Estimation
+
 Three methods were used for importance estimation:
+
+### Ranom Tree Leafs
+
 Generation of the value based on variations in random tree leafs https://scikit-learn.org/stable/auto_examples/ensemble/plot_forest_importances.html
-Random Tree Leafs
-After model is trained on the prediction stage each column (values of the feature) are randomly permuted. Accuracy of prediction on the permuted data is compared to the accuracy of prediction on the original data. Importance value is recorded as percentage of accuracy drop.
-After the model is trained on the prediction stage each column( values of the feature) are randomly permuted. LogLoss of prediction on the permuted data is compared to the LogLoss of prediction on the original data. Importance value is recorded as percentage of logloss change. It turned out that this method is not working well when working with the whole dataset. Features combined together replace each other and the change in the accuracy is not visible. LogLoss can change but still insignificantly. In order to select 3 most important features in this case sequential feature selection was applied. First combination of 1 feature was tested, logLoss was estimated and the value with the best logLoss was kept. Next pair of features including this previously selected one was tested. Finally, combinations of 3 most important features was generated.
+
+After model is trained on the prediction stage each column (values of the feature) are randomly permuted. Accuracy of prediction on the permuted data is compared to the accuracy of prediction on the original data. Importance value is recorded as percentage of accuracy drop. After the model is trained on the prediction stage each column( values of the feature) are randomly permuted. LogLoss of prediction on the permuted data is compared to the LogLoss of prediction on the original data. Importance value is recorded as percentage of logloss change. It turned out that this method is not working well when working with the whole dataset. Features combined together replace each other and the change in the accuracy is not visible. LogLoss can change but still insignificantly. In order to select 3 most important features in this case sequential feature selection was applied. First combination of 1 feature was tested, logLoss was estimated and the value with the best logLoss was kept. Next pair of features including this previously selected one was tested. Finally, combinations of 3 most important features was generated.
+
 For logistic regression algorithm that is ['revol_util', 'verification_status', 'annual_inc']
 For gradient boosting that is: ['annual_inc', 'open_acc', 'total_acc']
 Tests show that gradient boosting would be the best algorithm as it shows better values of recall.
-Configuration & Running the Code
+
+## Configuration & Running the Code
+
 It is easy to run the code from the command line:
 >> python main.py
 Please make sure your Python environment satisfies the following requirements:
@@ -59,7 +73,8 @@ matplotlib >= 2.2.2
 which can be found in requirements.txt.
 The main.py file contains all the configuration for the run in the main section. Several things can be customized there. After running main.py with the default configuration, the output is the results of the prediction for the top three features. These are pasted at the end of this notebook.
 The classifiers are stored in the loan_analysis/data folder at the root level of the directory. The processed data is also saved there.
-Function Architecture
+
+## Function Architecture
 I have tried to avoid using the sklearn libraries unless necessary. I did this so you can get a flavor of my coding style and to give you an idea of how I would approach a problem. Obviously, one can just use sklearn.model_selection.StratifiedKFold() instead of writing crossValidation.py. Here is a list of files with the functions they implement:
 axil.py
 clean_files() utility to keep things tidy.
