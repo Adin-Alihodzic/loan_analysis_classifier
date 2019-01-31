@@ -60,7 +60,7 @@ For logistic regression algorithm that is ['revol_util', 'verification_status', 
 For gradient boosting that is: ['annual_inc', 'open_acc', 'total_acc']
 Tests show that gradient boosting would be the best algorithm as it shows better values of recall.
 
-![alt text](test.png)
+![Importance Tree](data/importance_tree.png)
 
 ## Configuration & Running the Code
 
